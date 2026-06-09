@@ -1,0 +1,6 @@
+.CondaPkg/
+.julia/
+Manifest.toml
+*.jl.cov
+*.jl.*.cov
+coverage/
