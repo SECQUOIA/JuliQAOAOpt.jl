@@ -119,13 +119,13 @@ end
           Float64.(fixture["parameters"]["none_qiskit_initial_parameters"])
 
     sampling = fixture["sampling"]
+    draws = Float64.(sampling["draws"])
     samples = JuliQAOAOpt._sample_probabilities(
         Float64,
         Float64.(sampling["probabilities"]),
         energies,
         fixture["qubo"]["variables"],
-        sampling["final_reads"],
-        sampling["seed"],
+        draws,
     )
 
     actual = Dict(
@@ -144,7 +144,7 @@ end
         @test actual[state].energy ≈ record.energy
         @test actual[state].reads == record.reads
     end
-    @test sum(QUBOTools.reads(sample) for sample in samples) == sampling["final_reads"]
+    @test sum(QUBOTools.reads(sample) for sample in samples) == length(draws)
 end
 
 @testset "sampling and metadata" begin

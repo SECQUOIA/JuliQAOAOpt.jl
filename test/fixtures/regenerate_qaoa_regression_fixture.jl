@@ -1,4 +1,3 @@
-using Random
 using Statistics
 
 function state(index::Integer, n::Integer)
@@ -15,13 +14,12 @@ function qiskit_parameters(angles, scale)
     return Float64[v for v in vcat(angles[1:layers], angles[(layers + 1):end] ./ scale)]
 end
 
-function sample_counts(probabilities, final_reads, seed)
+function sample_counts(probabilities, draws)
     cumulative = cumsum(probabilities)
     cumulative[end] = 1.0
-    rng = MersenneTwister(seed)
     counts = Dict{Int,Int}()
-    for _ in 1:final_reads
-        index = first(searchsorted(cumulative, rand(rng)))
+    for u in draws
+        index = first(searchsorted(cumulative, u))
         counts[index] = get(counts, index, 0) + 1
     end
     return sort(collect(counts); by = first)
@@ -37,9 +35,8 @@ scale = std(energies)
 normalized = (energies .- shift) ./ scale
 angles = [0.11, 0.22, 0.33, 0.44]
 probabilities = [0.05, 0.15, 0.30, 0.50]
-seed = 19
-final_reads = 20
-counts = sample_counts(probabilities, final_reads, seed)
+draws = [0.01, 0.04, 0.06, 0.10, 0.15, 0.19, 0.21, 0.25, 0.30, 0.40, 0.45, 0.49, 0.51, 0.60, 0.70, 0.80, 0.90, 0.95, 0.99, 0.999]
+counts = sample_counts(probabilities, draws)
 
 open(fixture_path, "w") do io
     println(io, "[fixture]")
@@ -69,8 +66,7 @@ open(fixture_path, "w") do io
     println(io, "none_qiskit_initial_parameters = $(format_float_array(qiskit_parameters(angles, 1.0)))")
     println(io)
     println(io, "[sampling]")
-    println(io, "seed = $seed")
-    println(io, "final_reads = $final_reads")
+    println(io, "draws = $(format_float_array(draws))")
     println(io, "probabilities = $(format_float_array(probabilities))")
 
     for (index, reads) in counts

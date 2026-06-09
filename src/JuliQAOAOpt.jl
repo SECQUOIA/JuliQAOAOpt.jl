@@ -164,12 +164,23 @@ function _probabilities(angles, mixer, normalized)
 end
 
 function _sample_probabilities(::Type{T}, probabilities, energies, n, final_reads, seed) where {T}
+    rng = isnothing(seed) ? Random.default_rng() : Random.MersenneTwister(seed)
+    draws = rand(rng, final_reads)
+    return _sample_probabilities(T, probabilities, energies, n, draws)
+end
+
+function _sample_probabilities(
+    ::Type{T},
+    probabilities,
+    energies,
+    n,
+    draws::AbstractVector{<:Real},
+) where {T}
     cumulative = cumsum(probabilities)
     cumulative[end] = 1.0
-    rng = isnothing(seed) ? Random.default_rng() : Random.MersenneTwister(seed)
     counts = Dict{Int,Int}()
-    for _ in 1:final_reads
-        index = first(searchsorted(cumulative, rand(rng)))
+    for u in draws
+        index = first(searchsorted(cumulative, u))
         counts[index] = get(counts, index, 0) + 1
     end
 
