@@ -84,23 +84,17 @@ function sample(sampler::Optimizer{T}) where {T}
         origin                = "JuliQAOAOpt.jl using JuliQAOA.jl",
         algorithm_name        = "JuliQAOA",
         execution_mode        = "statevector_angle_search",
-        optimizer_evaluations = state_count,
-        number_of_reads       = num_reads,
+        optimizer_iterations  = niter,
+        number_of_reads       = final_reads,
         final_number_of_reads = final_reads,
         seeds                 = Dict{String,Any}("sampler" => seed),
         status                = "locally_solved",
         termination_status    = MOI.LOCALLY_SOLVED,
     )
-    metadata["time"] = Dict{String,Any}(
-        "enumeration" => enumeration.time,
-        "angle_search" => angle_search.time,
-        "probabilities" => probability_result.time,
-        "sampling" => sampling.time,
-        "effective" => enumeration.time + angle_search.time + probability_result.time + sampling.time,
-    )
     metadata["juliqaoa"] = Dict{String,Any}(
         "number_of_layers" => p,
         "basinhopping_niter" => niter,
+        "configured_number_of_reads" => num_reads,
         "energy_normalization" => string(normalization),
         "energy_shift" => shift,
         "energy_scale" => scale,
@@ -110,6 +104,13 @@ function sample(sampler::Optimizer{T}) where {T}
         "expected_values_by_layer" => Float64.(expected_normalized_values),
         "normalized_angles" => normalized_angles,
         "qiskit_initial_parameters" => _qiskit_parameters(normalized_angles, scale),
+        "time" => Dict{String,Any}(
+            "enumeration" => enumeration.time,
+            "angle_search" => angle_search.time,
+            "probabilities" => probability_result.time,
+            "sampling" => sampling.time,
+            "effective" => enumeration.time + angle_search.time + probability_result.time + sampling.time,
+        ),
     )
 
     return SampleSet{T}(samples, metadata; sense = :min, domain = :bool)

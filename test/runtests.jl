@@ -12,7 +12,7 @@ function julia_compat_spec()
     return Pkg.Types.semver_spec(project["compat"]["julia"])
 end
 
-function build_two_variable_model(; final_reads = 25, max_variables = 24)
+function build_two_variable_model(; final_reads = 25, number_of_reads = nothing, max_variables = 24)
     model = MOI.instantiate(JuliQAOAOpt.Optimizer; with_bridge_type = Float64)
     x, _ = MOI.add_constrained_variables(model, fill(MOI.ZeroOne(), 2))
     objective = MOI.ScalarQuadraticFunction{Float64}(
@@ -33,7 +33,12 @@ function build_two_variable_model(; final_reads = 25, max_variables = 24)
     MOI.set(model, JuliQAOAOpt.BasinHoppingIterations(), 1)
     MOI.set(model, JuliQAOAOpt.RandomSeed(), 11)
     MOI.set(model, JuliQAOAOpt.MaximumVariables(), max_variables)
-    MOI.set(model, QUBODrivers.FinalNumberOfReads(), final_reads)
+    if !isnothing(number_of_reads)
+        MOI.set(model, JuliQAOAOpt.NumberOfReads(), number_of_reads)
+    end
+    if !isnothing(final_reads)
+        MOI.set(model, QUBODrivers.FinalNumberOfReads(), final_reads)
+    end
     return model
 end
 
@@ -109,6 +114,54 @@ end
     @test params == Float64.(data["qiskit_initial_parameters"])
     @test params[1] ≈ data["normalized_angles"][1]
     @test params[2] ≈ data["normalized_angles"][2] / data["energy_scale"]
+end
+
+@testset "metadata read counts and schema" begin
+    expected_top_level_keys = Set([
+        "algorithm",
+        "backend",
+        "execution",
+        "juliqaoa",
+        "optimizer",
+        "origin",
+        "reads",
+        "seeds",
+        "status",
+        "termination_status",
+        "time",
+    ])
+
+    default_model = build_two_variable_model(final_reads = nothing, number_of_reads = 7)
+    MOI.optimize!(default_model)
+    default_sampleset = solution(default_model)
+    default_metadata = QUBOTools.metadata(default_sampleset)
+
+    @test sum(QUBOTools.reads(sample) for sample in default_sampleset) == 7
+    @test default_metadata["reads"]["number_of_reads"] == 7
+    @test default_metadata["reads"]["final_number_of_reads"] == 7
+    @test default_metadata["optimizer"]["iterations"] == 1
+    @test default_metadata["optimizer"]["evaluations"] === nothing
+    @test Set(keys(default_metadata)) == expected_top_level_keys
+    @test Set(keys(default_metadata["time"])) == Set(["total"])
+
+    default_data = default_metadata["juliqaoa"]
+    @test default_data["enumerated_states"] == 4
+    @test default_data["configured_number_of_reads"] == 7
+    @test haskey(default_data, "time")
+    @test !haskey(default_metadata, "enumerated_states")
+    @test !haskey(default_metadata, "expected_qubo_energy")
+
+    override_model = build_two_variable_model(final_reads = 5, number_of_reads = 13)
+    MOI.optimize!(override_model)
+    override_sampleset = solution(override_model)
+    override_metadata = QUBOTools.metadata(override_sampleset)
+
+    @test sum(QUBOTools.reads(sample) for sample in override_sampleset) == 5
+    @test override_metadata["reads"]["number_of_reads"] == 5
+    @test override_metadata["reads"]["final_number_of_reads"] == 5
+    @test override_metadata["optimizer"]["evaluations"] === nothing
+    @test Set(keys(override_metadata)) == expected_top_level_keys
+    @test override_metadata["juliqaoa"]["configured_number_of_reads"] == 13
 end
 
 @testset "maximum variable guard" begin
