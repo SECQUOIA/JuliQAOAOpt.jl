@@ -1,9 +1,16 @@
 using Test
+using Pkg
+using TOML
 
 using JuliQAOAOpt
 using JuliQAOAOpt: MOI, QUBODrivers, QUBOTools
 
 const SampleReads = QUBOTools.__moi_num_reads()
+
+function julia_compat_spec()
+    project = TOML.parsefile(joinpath(dirname(@__DIR__), "Project.toml"))
+    return Pkg.Types.semver_spec(project["compat"]["julia"])
+end
 
 function build_two_variable_model(; final_reads = 25, max_variables = 24)
     model = MOI.instantiate(JuliQAOAOpt.Optimizer; with_bridge_type = Float64)
@@ -34,11 +41,21 @@ function solution(model)
     return QUBOTools.solution(MOI.get(model, MOI.RawSolver()))
 end
 
-@testset "README installation docs" begin
+@testset "support policy docs" begin
     readme = read(joinpath(dirname(@__DIR__), "README.md"), String)
+    project = read(joinpath(dirname(@__DIR__), "Project.toml"), String)
     installation = findfirst("## Installation", readme)
     usage = findfirst("## Usage", readme)
+    compat = julia_compat_spec()
 
+    @test occursin("Julia 1.10 LTS and Julia 1.11", readme)
+    @test occursin("JuliQAOA.find_angles_bh", readme)
+    @test occursin("Julia 1.12+", readme)
+    @test occursin("julia = \"1.10 - 1.11\"", project)
+    @test VersionNumber("1.9.4") ∉ compat
+    @test VersionNumber("1.10.0") ∈ compat
+    @test VersionNumber("1.11.9") ∈ compat
+    @test VersionNumber("1.12.0") ∉ compat
     @test occursin("Pkg.add(url=\"https://github.com/lanl/JuliQAOA.jl\")", readme)
     @test occursin("Pkg.add(url=\"https://github.com/SECQUOIA/JuliQAOAOpt.jl\")", readme)
     @test occursin("Pkg.add(\"JuMP\")", readme)
