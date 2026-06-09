@@ -66,6 +66,7 @@ open(fixture_path, "w") do io
     println(io, "none_qiskit_initial_parameters = $(format_float_array(qiskit_parameters(angles, 1.0)))")
     println(io)
     println(io, "[sampling]")
+    println(io, "# Draws intentionally avoid CDF boundaries (0.05, 0.20, 0.50) so searchsorted bins stay stable.")
     println(io, "draws = $(format_float_array(draws))")
     println(io, "probabilities = $(format_float_array(probabilities))")
 

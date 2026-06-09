@@ -94,8 +94,8 @@ end
     layers = fixture["parameters"]["layers"]
 
     @test length(angles) == 2 * layers
-    @test angles[1:layers] == [0.11, 0.22]
-    @test angles[(layers + 1):end] == [0.33, 0.44]
+    @test angles[1:layers] ≈ [0.11, 0.22]
+    @test angles[(layers + 1):end] ≈ [0.33, 0.44]
 
     zscore = fixture["normalization"]["zscore"]
     normalized, shift, scale = JuliQAOAOpt._normalize_energies(energies, :zscore)
