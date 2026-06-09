@@ -34,11 +34,16 @@ function solution(model)
     return QUBOTools.solution(MOI.get(model, MOI.RawSolver()))
 end
 
-@testset "README installation docs" begin
+@testset "support policy docs" begin
     readme = read(joinpath(dirname(@__DIR__), "README.md"), String)
+    project = read(joinpath(dirname(@__DIR__), "Project.toml"), String)
     installation = findfirst("## Installation", readme)
     usage = findfirst("## Usage", readme)
 
+    @test occursin("Julia 1.10 LTS and Julia 1.11", readme)
+    @test occursin("JuliQAOA.find_angles_bh", readme)
+    @test occursin("Julia 1.12+", readme)
+    @test occursin("julia = \">= 1.10, < 1.12\"", project)
     @test occursin("Pkg.add(url=\"https://github.com/lanl/JuliQAOA.jl\")", readme)
     @test occursin("Pkg.add(url=\"https://github.com/SECQUOIA/JuliQAOAOpt.jl\")", readme)
     @test occursin("Pkg.add(\"JuMP\")", readme)

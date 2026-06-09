@@ -12,6 +12,11 @@ This is intended for moderate-size QUBOs. The current implementation enumerates 
 
 ## Installation
 
+JuliQAOAOpt supports Julia 1.10 LTS and Julia 1.11 for angle finding. The optimizer calls
+`JuliQAOA.find_angles_bh`, which currently relies on JuliQAOA/Enzyme gradient computation
+that upstream JuliQAOA documents as limited on Julia 1.12+. Until that path is reliable on
+Julia 1.12+, this package constrains Julia compat to `>= 1.10, < 1.12`.
+
 `JuliQAOA.jl` is not currently registered in Julia's General registry, so install it by URL
 before installing this package:
 
