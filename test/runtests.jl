@@ -46,6 +46,10 @@ function solution(model)
     return QUBOTools.solution(MOI.get(model, MOI.RawSolver()))
 end
 
+function qaoa_regression_fixture()
+    return TOML.parsefile(joinpath(@__DIR__, "fixtures", "qaoa_regression.toml"))
+end
+
 @testset "support policy docs" begin
     readme = read(joinpath(dirname(@__DIR__), "README.md"), String)
     project = read(joinpath(dirname(@__DIR__), "Project.toml"), String)
@@ -81,6 +85,66 @@ end
         MOI.set(model, JuliQAOAOpt.MaximumVariables(), 8)
         MOI.set(model, QUBODrivers.FinalNumberOfReads(), 16)
     end
+end
+
+@testset "focused QAOA math regression fixture" begin
+    fixture = qaoa_regression_fixture()
+    energies = Float64.(fixture["qubo"]["energies"])
+    angles = Float64.(fixture["parameters"]["normalized_angles"])
+    layers = fixture["parameters"]["layers"]
+
+    @test length(angles) == 2 * layers
+    @test angles[1:layers] == [0.11, 0.22]
+    @test angles[(layers + 1):end] == [0.33, 0.44]
+
+    zscore = fixture["normalization"]["zscore"]
+    normalized, shift, scale = JuliQAOAOpt._normalize_energies(energies, :zscore)
+
+    @test shift ≈ zscore["shift"]
+    @test scale ≈ zscore["scale"]
+    @test normalized ≈ Float64.(zscore["normalized_energies"])
+    @test JuliQAOAOpt._qiskit_parameters(angles, scale) ≈
+          Float64.(fixture["parameters"]["zscore_qiskit_initial_parameters"])
+    @test JuliQAOAOpt._qiskit_parameters(angles, scale)[1:layers] ≈ angles[1:layers]
+    @test JuliQAOAOpt._qiskit_parameters(angles, scale)[(layers + 1):end] ≈
+          angles[(layers + 1):end] ./ scale
+
+    none = fixture["normalization"]["none"]
+    unnormalized, none_shift, none_scale = JuliQAOAOpt._normalize_energies(energies, :none)
+
+    @test none_shift ≈ none["shift"]
+    @test none_scale ≈ none["scale"]
+    @test unnormalized ≈ Float64.(none["normalized_energies"])
+    @test JuliQAOAOpt._qiskit_parameters(angles, none_scale) ≈
+          Float64.(fixture["parameters"]["none_qiskit_initial_parameters"])
+
+    sampling = fixture["sampling"]
+    samples = JuliQAOAOpt._sample_probabilities(
+        Float64,
+        Float64.(sampling["probabilities"]),
+        energies,
+        fixture["qubo"]["variables"],
+        sampling["final_reads"],
+        sampling["seed"],
+    )
+
+    actual = Dict(
+        Tuple(QUBOTools.state(sample)) =>
+            (energy = QUBOTools.value(sample), reads = QUBOTools.reads(sample))
+        for sample in samples
+    )
+    expected = Dict(
+        Tuple(Int.(record["state"])) =>
+            (energy = Float64(record["energy"]), reads = record["reads"])
+        for record in sampling["samples"]
+    )
+
+    @test keys(actual) == keys(expected)
+    for (state, record) in expected
+        @test actual[state].energy ≈ record.energy
+        @test actual[state].reads == record.reads
+    end
+    @test sum(QUBOTools.reads(sample) for sample in samples) == sampling["final_reads"]
 end
 
 @testset "sampling and metadata" begin

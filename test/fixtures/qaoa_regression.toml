@@ -1,0 +1,45 @@
+[fixture]
+description = "Two-variable QUBO used for focused JuliQAOAOpt regression tests."
+regenerate = "julia --project=. test/fixtures/regenerate_qaoa_regression_fixture.jl"
+
+[qubo]
+variables = 2
+objective = "-x1 + 2*x2 + 2*x1*x2"
+states = [[0, 0], [1, 0], [0, 1], [1, 1]]
+energies = [0.0, -1.0, 2.0, 3.0]
+
+[normalization.zscore]
+shift = 1.0
+scale = 1.8257418583505538
+normalized_energies = [-0.5477225575051661, -1.0954451150103321, 0.5477225575051661, 1.0954451150103321]
+
+[normalization.none]
+shift = 0.0
+scale = 1.0
+normalized_energies = [0.0, -1.0, 2.0, 3.0]
+
+[parameters]
+layers = 2
+normalized_angles = [0.11, 0.22, 0.33, 0.44]
+zscore_qiskit_initial_parameters = [0.11, 0.22, 0.1807484439767048, 0.24099792530227307]
+none_qiskit_initial_parameters = [0.11, 0.22, 0.33, 0.44]
+
+[sampling]
+seed = 19
+final_reads = 20
+probabilities = [0.05, 0.15, 0.3, 0.5]
+
+[[sampling.samples]]
+state = [1, 0]
+energy = -1.0
+reads = 4
+
+[[sampling.samples]]
+state = [0, 1]
+energy = 2.0
+reads = 6
+
+[[sampling.samples]]
+state = [1, 1]
+energy = 3.0
+reads = 10
