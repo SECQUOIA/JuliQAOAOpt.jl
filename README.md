@@ -68,8 +68,9 @@ normalized energy, probability, and JuliQAOA statevector data, so practical memo
 use is higher.
 
 If a model has more variables than the configured cap, `optimize!` throws an
-`ArgumentError` before enumerating states. Raise the cap only when the machine has
-enough memory and the expected `2^n` runtime is acceptable:
+`ArgumentError` before enumerating states. Set a lower cap for stricter local
+guardrails, or raise it only when the machine has enough memory and the expected
+`2^n` runtime is acceptable:
 
 ```julia
 set_attribute(model, JuliQAOAOpt.MaximumVariables(), 20)
