@@ -7,8 +7,8 @@ JuMP/QUBODrivers interface for LANL's [JuliQAOA.jl](https://github.com/lanl/Juli
 angles with `JuliQAOA.find_angles_bh`, samples from the resulting exact probabilities, and
 returns a QUBODrivers-compatible sample set.
 
-This is intended for moderate-size QUBOs. The current implementation enumerates all
-``2^n`` Boolean states to build the JuliQAOA cost diagonal.
+This interface is intended for moderate-size QUBOs. It uses a local statevector
+method; see [Scalability Limits](#scalability-limits) for the `2^n` enumeration cap.
 
 ## Installation
 
@@ -52,6 +52,31 @@ optimize!(model)
 
 `JuliQAOAOpt` stores the learned normalized angles, energy normalization, and QiskitOpt-ready
 parameters in the returned sample-set metadata.
+
+## Scalability Limits
+
+`JuliQAOAOpt` builds JuliQAOA's cost diagonal by enumerating all `2^n` Boolean
+states for an `n`-variable QUBO before angle search. Runtime and memory therefore
+grow exponentially with variable count; this interface is intended for moderate-size
+QUBOs, not as a replacement for large QUBO solvers that avoid dense statevector
+enumeration.
+
+The `MaximumVariables()` optimizer attribute bounds this work before allocation. Its
+default is `24`, which corresponds to `2^24 = 16,777,216` states. A single dense
+`Float64` vector at that size is about 128 MiB, and optimization also allocates
+normalized energy, probability, and JuliQAOA statevector data, so practical memory
+use is higher.
+
+If a model has more variables than the configured cap, `optimize!` throws an
+`ArgumentError` before enumerating states. Raise the cap only when the machine has
+enough memory and the expected `2^n` runtime is acceptable:
+
+```julia
+set_attribute(model, JuliQAOAOpt.MaximumVariables(), 20)
+```
+
+The returned sample-set metadata includes `metadata["juliqaoa"]["enumerated_states"]`
+and `metadata["juliqaoa"]["time"]["enumeration"]` for completed runs.
 
 ## Transferring Angles To QiskitOpt.jl
 

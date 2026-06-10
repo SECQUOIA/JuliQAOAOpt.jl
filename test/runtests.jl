@@ -55,6 +55,7 @@ end
     project = read(joinpath(dirname(@__DIR__), "Project.toml"), String)
     installation = findfirst("## Installation", readme)
     usage = findfirst("## Usage", readme)
+    scalability = findfirst("## Scalability Limits", readme)
     compat = julia_compat_spec()
 
     @test occursin("Julia 1.10 LTS and Julia 1.11", readme)
@@ -68,11 +69,23 @@ end
     @test occursin("Pkg.add(url=\"https://github.com/lanl/JuliQAOA.jl\")", readme)
     @test occursin("Pkg.add(url=\"https://github.com/SECQUOIA/JuliQAOAOpt.jl\")", readme)
     @test occursin("Pkg.add(\"JuMP\")", readme)
+    @test occursin("enumerating all `2^n`", readme)
+    @test occursin("`MaximumVariables()` optimizer attribute", readme)
+    @test occursin("default is `24`", readme)
+    @test occursin("`2^24 = 16,777,216` states", readme)
+    @test occursin("throws an", readme)
+    @test occursin("`ArgumentError` before enumerating states", readme)
+    @test occursin("metadata[\"juliqaoa\"][\"enumerated_states\"]", readme)
     @test installation !== nothing
     @test usage !== nothing
+    @test scalability !== nothing
 
     if installation !== nothing && usage !== nothing
         @test first(installation) < first(usage)
+    end
+
+    if usage !== nothing && scalability !== nothing
+        @test first(usage) < first(scalability)
     end
 end
 
@@ -229,6 +242,18 @@ end
 end
 
 @testset "maximum variable guard" begin
+    default_model = MOI.instantiate(JuliQAOAOpt.Optimizer; with_bridge_type = Float64)
+    @test MOI.get(default_model, JuliQAOAOpt.MaximumVariables()) == 24
+
     model = build_two_variable_model(max_variables = 1)
-    @test_throws ArgumentError MOI.optimize!(model)
+    err = try
+        MOI.optimize!(model)
+        nothing
+    catch err
+        err
+    end
+
+    @test err isa ArgumentError
+    @test occursin("QUBO has 2 variables", sprint(showerror, err))
+    @test occursin("MaximumVariables()=1", sprint(showerror, err))
 end

@@ -118,7 +118,8 @@ end
 
 function _validate_inputs(n, num_reads, final_reads, p, niter, seed, max_variables, normalization)
     n >= 1 || throw(ArgumentError("JuliQAOAOpt requires at least one variable"))
-    n <= max_variables || throw(ArgumentError("QUBO has $(n) variables, exceeding max_variables=$(max_variables)"))
+    n <= max_variables ||
+        throw(ArgumentError("QUBO has $(n) variables, exceeding MaximumVariables()=$(max_variables)"))
     num_reads >= 0 || throw(ArgumentError("num_reads must be non-negative"))
     final_reads >= 0 || throw(ArgumentError("final_num_reads must be non-negative"))
     p >= 1 || throw(ArgumentError("num_layers must be at least 1"))
