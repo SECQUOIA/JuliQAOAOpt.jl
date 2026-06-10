@@ -1,0 +1,34 @@
+name: Docs
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: "1.10"
+      - uses: julia-actions/cache@v3
+      - name: Instantiate docs environment
+        run: julia --project=docs -e 'import Pkg; Pkg.develop([Pkg.PackageSpec(url="https://github.com/lanl/JuliQAOA.jl"), Pkg.PackageSpec(path=pwd())]); Pkg.instantiate()'
+      - name: Build docs
+        if: github.event_name == 'pull_request'
+        run: julia --project=docs docs/make.jl
+      - name: Build and deploy docs
+        if: github.event_name != 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: julia --project=docs docs/make.jl --deploy

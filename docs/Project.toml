@@ -1,0 +1,7 @@
+[deps]
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+JuliQAOA = "f6a82f60-6483-4cab-9c40-ce255ce481bf"
+JuliQAOAOpt = "f0c2e7e6-2471-4d75-8f8b-87a6dd6e3a8f"
+
+[compat]
+Documenter = "1"

@@ -10,6 +10,10 @@ returns a QUBODrivers-compatible sample set.
 This interface is intended for moderate-size QUBOs. It uses a local statevector
 method; see [Scalability Limits](#scalability-limits) for the `2^n` enumeration cap.
 
+The full package documentation lives in `docs/` and includes API reference,
+metadata schema, contribution guidance, and the saved QiskitOpt angle-transfer
+fixture workflow.
+
 ## Installation
 
 JuliQAOAOpt supports Julia 1.10 LTS and Julia 1.11 for angle finding. The optimizer calls
