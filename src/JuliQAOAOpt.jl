@@ -27,6 +27,65 @@ QUBODrivers.@setup Optimizer begin
     end
 end
 
+"""
+    Optimizer
+
+QUBODrivers-compatible MathOptInterface optimizer backed by JuliQAOA statevector
+angle search and probability sampling.
+"""
+Optimizer
+
+"""
+    NumberOfReads()
+
+Requested number of reads before QUBODrivers final-read normalization.
+"""
+NumberOfReads
+
+"""
+    NumberOfLayers()
+
+Number of QAOA layers used for JuliQAOA angle search.
+"""
+NumberOfLayers
+
+"""
+    BasinHoppingIterations()
+
+Number of basin-hopping iterations passed to `JuliQAOA.find_angles_bh`.
+"""
+BasinHoppingIterations
+
+"""
+    RandomSeed()
+
+Optional non-negative integer seed used for angle search initialization and sampling.
+"""
+RandomSeed
+
+"""
+    MaximumVariables()
+
+Maximum number of binary variables allowed before dense `2^n` state enumeration.
+"""
+MaximumVariables
+
+"""
+    EnergyNormalization()
+
+Energy normalization policy used before angle search. Supported values are
+`:zscore` and `:none`.
+"""
+EnergyNormalization
+
+"""
+    qiskit_initial_parameters(sampleset::SampleSet)
+    qiskit_initial_parameters(metadata::AbstractDict)
+
+Return QiskitOpt-ready QAOA initial parameters from JuliQAOAOpt sample-set metadata.
+The order is beta values followed by gamma values, with gamma values converted from
+normalized JuliQAOA energies back to the original QUBO energy scale.
+"""
 qiskit_initial_parameters(sampleset::SampleSet) = qiskit_initial_parameters(QUBOTools.metadata(sampleset))
 
 function qiskit_initial_parameters(metadata::AbstractDict)

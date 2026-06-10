@@ -89,6 +89,42 @@ end
     end
 end
 
+@testset "documentation site artifacts" begin
+    root = dirname(@__DIR__)
+    docs_project = TOML.parsefile(joinpath(root, "docs", "Project.toml"))
+    dependabot = read(joinpath(root, ".github", "dependabot.yml"), String)
+    contributing = read(joinpath(root, "CONTRIBUTING.md"), String)
+    index = read(joinpath(root, "docs", "src", "index.md"), String)
+    usage = read(joinpath(root, "docs", "src", "manual", "usage.md"), String)
+    metadata = read(joinpath(root, "docs", "src", "manual", "metadata.md"), String)
+    qiskit = read(joinpath(root, "docs", "src", "manual", "qiskit.md"), String)
+    api = read(joinpath(root, "docs", "src", "api.md"), String)
+
+    @test haskey(docs_project["deps"], "Documenter")
+    @test haskey(docs_project["deps"], "JuliQAOA")
+    @test haskey(docs_project["deps"], "JuliQAOAOpt")
+    @test docs_project["compat"]["Documenter"] == "1"
+    @test occursin("makedocs", read(joinpath(root, "docs", "make.jl"), String))
+
+    @test occursin("package-ecosystem: \"julia\"", dependabot)
+    @test occursin("- \"/docs\"", dependabot)
+    @test occursin("- \"/test\"", dependabot)
+    @test occursin("package-ecosystem: \"github-actions\"", dependabot)
+
+    @test occursin("JuliQAOA.find_angles_bh", contributing)
+    @test occursin("julia --project=docs docs/make.jl", contributing)
+    @test occursin("Do not add QiskitOpt", contributing)
+
+    @test occursin("QUBODrivers sampler setup guide", index)
+    @test occursin("NumberOfReads()", usage)
+    @test occursin("EnergyNormalization()", usage)
+    @test occursin("metadata[\"juliqaoa\"]", metadata)
+    @test occursin("qiskit_initial_parameters", metadata)
+    @test occursin("test/fixtures/qaoa_regression.toml", qiskit)
+    @test occursin("QiskitOpt is intentionally not", qiskit)
+    @test occursin("JuliQAOAOpt.Optimizer", api)
+end
+
 @testset "QUBODrivers generic tests" begin
     QUBODrivers.test(JuliQAOAOpt.Optimizer) do model
         MOI.set(model, MOI.Silent(), true)
