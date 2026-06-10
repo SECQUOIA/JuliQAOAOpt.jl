@@ -6,6 +6,7 @@ DocMeta.setdocmeta!(JuliQAOAOpt, :DocTestSetup, :(using JuliQAOAOpt); recursive 
 makedocs(
     modules = [JuliQAOAOpt],
     sitename = "JuliQAOAOpt.jl",
+    clean = true,
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", "false") == "true",
     ),
@@ -18,5 +19,12 @@ makedocs(
         ],
         "API" => "api.md",
     ],
+    workdir = @__DIR__,
     checkdocs = :none,
 )
+
+if "--deploy" in ARGS
+    deploydocs(repo = "github.com/SECQUOIA/JuliQAOAOpt.jl.git", push_preview = true)
+else
+    @warn "Skipping deployment"
+end

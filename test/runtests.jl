@@ -93,6 +93,7 @@ end
     root = dirname(@__DIR__)
     docs_project = TOML.parsefile(joinpath(root, "docs", "Project.toml"))
     dependabot = read(joinpath(root, ".github", "dependabot.yml"), String)
+    docs_workflow = read(joinpath(root, ".github", "workflows", "docs.yml"), String)
     contributing = read(joinpath(root, "CONTRIBUTING.md"), String)
     index = read(joinpath(root, "docs", "src", "index.md"), String)
     usage = read(joinpath(root, "docs", "src", "manual", "usage.md"), String)
@@ -110,6 +111,8 @@ end
     @test occursin("- \"/docs\"", dependabot)
     @test occursin("- \"/test\"", dependabot)
     @test occursin("package-ecosystem: \"github-actions\"", dependabot)
+    @test occursin("julia --project=docs docs/make.jl --deploy", docs_workflow)
+    @test occursin("Pkg.develop([", docs_workflow)
 
     @test occursin("JuliQAOA.find_angles_bh", contributing)
     @test occursin("julia --project=docs docs/make.jl", contributing)
