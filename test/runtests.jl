@@ -258,12 +258,16 @@ end
     @test default_metadata["optimizer"]["iterations"] == 1
     @test default_metadata["optimizer"]["evaluations"] === nothing
     @test Set(keys(default_metadata)) == expected_top_level_keys
-    @test Set(keys(default_metadata["time"])) == Set(["total"])
+    @test Set(keys(default_metadata["time"])) == Set(["effective", "total"])
+    @test default_metadata["time"]["effective"] isa Real
+    @test default_metadata["time"]["effective"] >= 0
+    @test MOI.get(default_model, MOI.SolveTimeSec()) == default_metadata["time"]["effective"]
 
     default_data = default_metadata["juliqaoa"]
     @test default_data["enumerated_states"] == 4
     @test default_data["configured_number_of_reads"] == 7
     @test haskey(default_data, "time")
+    @test default_data["time"]["effective"] == default_metadata["time"]["effective"]
     @test !haskey(default_metadata, "enumerated_states")
     @test !haskey(default_metadata, "expected_qubo_energy")
 

@@ -138,6 +138,7 @@ function sample(sampler::Optimizer{T}) where {T}
 
     sampling = @timed _sample_probabilities(T, probabilities, energies, n, final_reads, seed)
     samples = sampling.value
+    effective_time = enumeration.time + angle_search.time + probability_result.time + sampling.time
 
     metadata = QUBODrivers._sampler_metadata(
         origin                = "JuliQAOAOpt.jl using JuliQAOA.jl",
@@ -150,6 +151,7 @@ function sample(sampler::Optimizer{T}) where {T}
         status                = "locally_solved",
         termination_status    = MOI.LOCALLY_SOLVED,
     )
+    metadata["time"] = Dict{String,Any}("effective" => effective_time)
     metadata["juliqaoa"] = Dict{String,Any}(
         "number_of_layers" => p,
         "basinhopping_niter" => niter,
@@ -168,7 +170,7 @@ function sample(sampler::Optimizer{T}) where {T}
             "angle_search" => angle_search.time,
             "probabilities" => probability_result.time,
             "sampling" => sampling.time,
-            "effective" => enumeration.time + angle_search.time + probability_result.time + sampling.time,
+            "effective" => effective_time,
         ),
     )
 
