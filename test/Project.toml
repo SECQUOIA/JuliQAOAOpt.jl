@@ -9,5 +9,5 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 [compat]
 JuMP = "1.30.1"
 QUBODrivers = "0.6.0"
-QUBOTools = "0.13.0, 0.14"
+QUBOTools = "0.13.0, 0.14, 0.16"
 TOML = "1.0.3"
