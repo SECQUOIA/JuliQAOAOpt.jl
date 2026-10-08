@@ -1,0 +1,20 @@
+{
+  "repository": "SECQUOIA/JuliQAOAOpt.jl",
+  "required_checks": [
+    "Julia 1.10 - ubuntu-latest - x64",
+    "Julia 1.11 - ubuntu-latest - x64",
+    "Dependabot policy",
+    "Build docs"
+  ],
+  "protected_checks": [
+    "Julia 1.10 - ubuntu-latest - x64",
+    "Julia 1.11 - ubuntu-latest - x64"
+  ],
+  "publication": [
+    {
+      "workflow": "docs.yml",
+      "input": "dependabot_pr",
+      "title": "Dependabot documentation"
+    }
+  ]
+}
