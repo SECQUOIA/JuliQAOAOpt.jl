@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata from this file."
+title: "JuliQAOAOpt.jl: QUBODrivers Interface for LANL's JuliQAOA.jl"
+type: software
+authors:
+  - name: "SECQUOIA"
+  - family-names: "Bernal Neira"
+    given-names: "David E."
+repository-code: "https://github.com/SECQUOIA/JuliQAOAOpt.jl"
+url: "https://github.com/SECQUOIA/JuliQAOAOpt.jl"
+license: MIT
+version: 0.2.0
+date-released: "2026-10-26"
+
