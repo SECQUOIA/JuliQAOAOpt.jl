@@ -62,6 +62,8 @@ end
     @test occursin("JuliQAOA.find_angles_bh", readme)
     @test occursin("Julia 1.12+", readme)
     @test occursin("julia = \"1.10 - 1.11\"", project)
+    @test MOI.get(JuliQAOAOpt.Optimizer(), MOI.SolverVersion()) == pkgversion(JuliQAOAOpt)
+    @test isfile(joinpath(dirname(@__DIR__), "CITATION.cff"))
     @test VersionNumber("1.9.4") ∉ compat
     @test VersionNumber("1.10.0") ∈ compat
     @test VersionNumber("1.11.9") ∈ compat

@@ -16,7 +16,7 @@ export Optimizer, qiskit_initial_parameters
 
 QUBODrivers.@setup Optimizer begin
     name       = "JuliQAOA Optimizer"
-    version    = v"0.1.0"
+    version    = v"0.2.0"
     attributes = begin
         NumberOfReads["num_reads"]::Integer                  = 1_000
         NumberOfLayers["num_layers"]::Integer                = 1
